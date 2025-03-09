@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -24,7 +24,7 @@ model User {
   availability      String?
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
-  
+
   // Relations
   ownedProjects     Project[]           @relation("ProjectOwner")
   memberProjects    ProjectMember[]
@@ -46,6 +46,11 @@ model User {
   matches           Match[]             @relation("UserMatches")
   notifications     Notification[]
   searchHistory     SearchQuery[]
+  
+  // Added missing relation fields
+  mentorProfile     MentorProfile?
+  mentorReviews     MentorReview[]
+  conversationParticipations ConversationParticipant[]
 }
 
 // Project model
@@ -59,7 +64,7 @@ model Project {
   visibility  Visibility      @default(PUBLIC)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-  
+
   // Relations
   owner       User            @relation("ProjectOwner", fields: [ownerId], references: [id])
   ownerId     String
@@ -69,6 +74,9 @@ model Project {
   guild       Guild?          @relation(fields: [guildId], references: [id])
   guildId     String?
   timestampProof String?
+  
+  // Added missing relation field
+  collaborationRequests CollaborationRequest[]
 }
 
 enum ProjectStatus {
@@ -90,7 +98,7 @@ model ProjectMember {
   id        String      @id @default(uuid())
   role      MemberRole
   joinedAt  DateTime    @default(now())
-  
+
   // Relations
   user      User        @relation(fields: [userId], references: [id])
   userId    String
@@ -114,7 +122,7 @@ model Document {
   content     String?       @db.Text
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  
+
   // Relations
   author      User          @relation("DocumentAuthor", fields: [authorId], references: [id])
   authorId    String
@@ -137,7 +145,7 @@ model DocumentEdit {
   id          String    @id @default(uuid())
   content     String    @db.Text
   createdAt   DateTime  @default(now())
-  
+
   // Relations
   document    Document  @relation(fields: [documentId], references: [id])
   documentId  String
@@ -151,7 +159,7 @@ model Milestone {
   title       String
   dueDate     DateTime
   completed   Boolean   @default(false)
-  
+
   // Relations
   project     Project   @relation(fields: [projectId], references: [id])
   projectId   String
@@ -168,7 +176,7 @@ model Guild {
   score       Int           @default(0)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  
+
   // Relations
   owner       User          @relation("GuildOwner", fields: [ownerId], references: [id])
   ownerId     String
@@ -180,7 +188,7 @@ model GuildMember {
   id        String      @id @default(uuid())
   role      GuildRole
   joinedAt  DateTime    @default(now())
-  
+
   // Relations
   user      User        @relation(fields: [userId], references: [id])
   userId    String
@@ -205,7 +213,7 @@ model MentorProfile {
   bio           String
   availability  String
   rating        Float       @default(0)
-  
+
   // Relations
   user          User        @relation(fields: [userId], references: [id])
   userId        String      @unique
@@ -220,7 +228,7 @@ model MentorshipRelation {
   endDate       DateTime?
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
-  
+
   // Relations
   student       User                @relation("Student", fields: [studentId], references: [id])
   studentId     String
@@ -244,7 +252,7 @@ model MentorReview {
   rating        Int
   comment       String
   date          DateTime        @default(now())
-  
+
   // Relations
   user          User            @relation(fields: [userId], references: [id])
   userId        String
@@ -265,7 +273,7 @@ model Article {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   timestampProof String?
-  
+
   // Relations
   author        User            @relation(fields: [authorId], references: [id])
   authorId      String
@@ -283,7 +291,7 @@ model Comment {
   id            String      @id @default(uuid())
   content       String
   createdAt     DateTime    @default(now())
-  
+
   // Relations
   user          User        @relation(fields: [userId], references: [id])
   userId        String
@@ -294,7 +302,7 @@ model Comment {
 model Like {
   id            String      @id @default(uuid())
   createdAt     DateTime    @default(now())
-  
+
   // Relations
   user          User        @relation(fields: [userId], references: [id])
   userId        String
@@ -310,7 +318,7 @@ model Message {
   content       String
   read          Boolean     @default(false)
   createdAt     DateTime    @default(now())
-  
+
   // Relations
   sender        User        @relation("MessageSender", fields: [senderId], references: [id])
   senderId      String
@@ -326,10 +334,13 @@ model Conversation {
   name          String?     // For group conversations
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  
+
   // Relations
   messages      Message[]
   participants  ConversationParticipant[]
+  
+  // Added missing relation field
+  match         Match?
 }
 
 enum ConversationType {
@@ -341,7 +352,7 @@ model ConversationParticipant {
   id              String        @id @default(uuid())
   joinedAt        DateTime      @default(now())
   lastRead        DateTime      @default(now())
-  
+
   // Relations
   user            User          @relation(fields: [userId], references: [id])
   userId          String
@@ -356,7 +367,7 @@ model SwipeAction {
   id            String      @id @default(uuid())
   action        SwipeType
   createdAt     DateTime    @default(now())
-  
+
   // Relations
   swiper        User        @relation("SwipedRight", fields: [swiperId], references: [id])
   swiperId      String
@@ -374,7 +385,7 @@ enum SwipeType {
 model Match {
   id            String      @id @default(uuid())
   createdAt     DateTime    @default(now())
-  
+
   // Relations
   users         User[]      @relation("UserMatches")
   conversation  Conversation? @relation(fields: [conversationId], references: [id])
@@ -387,7 +398,7 @@ model CollaborationRequest {
   status        RequestStatus       @default(PENDING)
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
-  
+
   // Relations
   sender        User                @relation("RequestSender", fields: [senderId], references: [id])
   senderId      String
@@ -410,7 +421,7 @@ model Notification {
   content       String
   read          Boolean             @default(false)
   createdAt     DateTime            @default(now())
-  
+
   // Relations
   user          User                @relation(fields: [userId], references: [id])
   userId        String
@@ -430,7 +441,7 @@ model SearchQuery {
   id            String      @id @default(uuid())
   query         String
   createdAt     DateTime    @default(now())
-  
+
   // Relations
   user          User        @relation(fields: [userId], references: [id])
   userId        String

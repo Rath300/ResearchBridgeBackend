@@ -1,17 +1,25 @@
 FROM node:18-alpine
 
+# Set working directory
 WORKDIR /app
 
-COPY package*.json ./
+# Copy server package files
+COPY server/package*.json ./
 RUN npm install
 
-COPY prisma ./prisma/
+# Generate Prisma client
+COPY server/prisma ./prisma/
 RUN npx prisma generate
 
-COPY . .
+# Copy server source code
+COPY server/ .
+
+# Build TypeScript
 RUN npm run build
 
+# Expose port
 EXPOSE 10000
 
+# Start command
 CMD ["npm", "start"]
 

@@ -3,16 +3,16 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy server package files
-COPY server/package*.json ./
+# Copy package files
+COPY package*.json ./
 RUN npm install
 
 # Generate Prisma client
-COPY server/prisma ./prisma/
+COPY prisma ./prisma/
 RUN npx prisma generate
 
-# Copy server source code
-COPY server/ .
+# Copy source code
+COPY . .
 
 # Build TypeScript
 RUN npm run build

@@ -245,11 +245,45 @@ router.post("/conversations/:id/messages", async (req: any, res) => {
       return res.status(403).json({ error: "Not authorized to send messages in this conversation" })
     }
 
+    // Get other participants
+    const participants = await prisma.conversationParticipant.findMany({
+      where: { conversationId: id },
+    });
+    
+    const otherParticipants = participants.filter(p => p.userId !== req.user.id);
+    
+    if (otherParticipants.length === 0) {
+      return res.status(400).json({ error: "No other participants in conversation" });
+    }
+
+    // Fix for userParticipant.lastRead
+    const userParticipant = await prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId: id,
+        userId: req.user.id,
+      },
+    });
+
+    if (!userParticipant || !userParticipant.lastRead) {
+      return res.status(404).json({ error: "User participant not found" });
+    }
+
+    // Now we can safely use userParticipant.lastRead
+    const unreadMessages = await prisma.message.count({
+      where: {
+        conversationId: id,
+        createdAt: {
+          gt: userParticipant.lastRead,
+        },
+      },
+    });
+
     // Create message
     const message = await prisma.message.create({
       data: {
         content,
         sender: { connect: { id: req.user.id } },
+        receiver: { connect: { id: otherParticipants[0].userId } },
         conversation: { connect: { id } },
       },
       include: {

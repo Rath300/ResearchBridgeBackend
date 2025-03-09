@@ -82,7 +82,8 @@ router.post("/recommendations", async (req: any, res) => {
 
     // Format papers for recommendation
     const paperDescriptions = papers
-      .map((paper) => `Title: ${paper.title}\nAbstract: ${paper.abstract}\nTags: ${paper.tags.join(", ")}`)
+      .map((paper: { title: string; abstract: string; tags: string[] }) => 
+        `Title: ${paper.title}\nAbstract: ${paper.abstract}\nTags: ${paper.tags.join(", ")}`)
       .join("\n\n")
 
     // Generate recommendations using OpenAI

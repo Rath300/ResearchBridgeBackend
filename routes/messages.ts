@@ -53,9 +53,10 @@ router.get("/conversations", async (req: any, res) => {
 
       const userParticipant = conversation.participants.find((p) => p.userId === req.user.id)
 
-      // Calculate unread messages
-      const unreadCount =
-        conversation.messages.length > 0 && conversation.messages[0].createdAt > userParticipant?.lastRead ? 1 : 0
+      // Calculate unread messages with proper null checks
+      const unreadCount = conversation.messages.length > 0 && userParticipant?.lastRead
+        ? conversation.messages[0].createdAt > userParticipant.lastRead ? 1 : 0
+        : 0
 
       return {
         id: conversation.id,

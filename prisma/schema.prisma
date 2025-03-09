@@ -10,71 +10,71 @@ datasource db {
 
 // User model
 model User {
-  id                String              @id @default(uuid())
-  email             String              @unique
-  password          String?
-  name              String
-  avatar            String?
-  school            String?
-  grade             String?
-  location          String?
-  bio               String?
-  interests         String[]
-  skills            String[]
-  availability      String?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String?
+  name         String
+  avatar       String?
+  school       String?
+  grade        String?
+  location     String?
+  bio          String?
+  interests    String[]
+  skills       String[]
+  availability String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
-  ownedProjects     Project[]           @relation("ProjectOwner")
-  memberProjects    ProjectMember[]
-  ownedGuilds       Guild[]             @relation("GuildOwner")
-  guildMemberships  GuildMember[]
-  sentMessages      Message[]           @relation("MessageSender")
-  receivedMessages  Message[]           @relation("MessageReceiver")
-  sentRequests      CollaborationRequest[] @relation("RequestSender")
-  receivedRequests  CollaborationRequest[] @relation("RequestReceiver")
-  mentorships       MentorshipRelation[] @relation("Student")
-  mentorRelations   MentorshipRelation[] @relation("Mentor")
-  documents         Document[]          @relation("DocumentAuthor")
-  documentEdits     DocumentEdit[]
-  articles          Article[]
-  comments          Comment[]
-  likes             Like[]
-  swipedRight       SwipeAction[]       @relation("SwipedRight")
-  swipedOn          SwipeAction[]       @relation("SwipedOn")
-  matches           Match[]             @relation("UserMatches")
-  notifications     Notification[]
-  searchHistory     SearchQuery[]
-  
+  ownedProjects    Project[]              @relation("ProjectOwner")
+  memberProjects   ProjectMember[]
+  ownedGuilds      Guild[]                @relation("GuildOwner")
+  guildMemberships GuildMember[]
+  sentMessages     Message[]              @relation("MessageSender")
+  receivedMessages Message[]              @relation("MessageReceiver")
+  sentRequests     CollaborationRequest[] @relation("RequestSender")
+  receivedRequests CollaborationRequest[] @relation("RequestReceiver")
+  mentorships      MentorshipRelation[]   @relation("Student")
+  mentorRelations  MentorshipRelation[]   @relation("Mentor")
+  documents        Document[]             @relation("DocumentAuthor")
+  documentEdits    DocumentEdit[]
+  articles         Article[]
+  comments         Comment[]
+  likes            Like[]
+  swipedRight      SwipeAction[]          @relation("SwipedRight")
+  swipedOn         SwipeAction[]          @relation("SwipedOn")
+  matches          Match[]                @relation("UserMatches")
+  notifications    Notification[]
+  searchHistory    SearchQuery[]
+
   // Added missing relation fields
-  mentorProfile     MentorProfile?
-  mentorReviews     MentorReview[]
+  mentorProfile              MentorProfile?
+  mentorReviews              MentorReview[]
   conversationParticipations ConversationParticipant[]
 }
 
 // Project model
 model Project {
-  id          String          @id @default(uuid())
+  id          String        @id @default(uuid())
   title       String
   description String
   category    String[]
-  status      ProjectStatus   @default(PLANNING)
-  progress    Int             @default(0)
-  visibility  Visibility      @default(PUBLIC)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  status      ProjectStatus @default(PLANNING)
+  progress    Int           @default(0)
+  visibility  Visibility    @default(PUBLIC)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   // Relations
-  owner       User            @relation("ProjectOwner", fields: [ownerId], references: [id])
-  ownerId     String
-  members     ProjectMember[]
-  documents   Document[]
-  timeline    Milestone[]
-  guild       Guild?          @relation(fields: [guildId], references: [id])
-  guildId     String?
+  owner          User            @relation("ProjectOwner", fields: [ownerId], references: [id])
+  ownerId        String
+  members        ProjectMember[]
+  documents      Document[]
+  timeline       Milestone[]
+  guild          Guild?          @relation(fields: [guildId], references: [id])
+  guildId        String?
   timestampProof String?
-  
+
   // Added missing relation field
   collaborationRequests CollaborationRequest[]
 }
@@ -95,14 +95,14 @@ enum Visibility {
 }
 
 model ProjectMember {
-  id        String      @id @default(uuid())
-  role      MemberRole
-  joinedAt  DateTime    @default(now())
+  id       String     @id @default(uuid())
+  role     MemberRole
+  joinedAt DateTime   @default(now())
 
   // Relations
-  user      User        @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
   userId    String
-  project   Project     @relation(fields: [projectId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id])
   projectId String
 
   @@unique([userId, projectId])
@@ -116,19 +116,19 @@ enum MemberRole {
 
 // Document model
 model Document {
-  id          String        @id @default(uuid())
-  title       String
-  type        DocumentType
-  content     String?       @db.Text
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id        String       @id @default(uuid())
+  title     String
+  type      DocumentType
+  content   String?      @db.Text
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   // Relations
-  author      User          @relation("DocumentAuthor", fields: [authorId], references: [id])
-  authorId    String
-  project     Project       @relation(fields: [projectId], references: [id])
-  projectId   String
-  edits       DocumentEdit[]
+  author    User           @relation("DocumentAuthor", fields: [authorId], references: [id])
+  authorId  String
+  project   Project        @relation(fields: [projectId], references: [id])
+  projectId String
+  edits     DocumentEdit[]
 }
 
 enum DocumentType {
@@ -142,58 +142,58 @@ enum DocumentType {
 }
 
 model DocumentEdit {
-  id          String    @id @default(uuid())
-  content     String    @db.Text
-  createdAt   DateTime  @default(now())
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
 
   // Relations
-  document    Document  @relation(fields: [documentId], references: [id])
-  documentId  String
-  user        User      @relation(fields: [userId], references: [id])
-  userId      String
+  document   Document @relation(fields: [documentId], references: [id])
+  documentId String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
 }
 
 // Milestone model
 model Milestone {
-  id          String    @id @default(uuid())
-  title       String
-  dueDate     DateTime
-  completed   Boolean   @default(false)
+  id        String   @id @default(uuid())
+  title     String
+  dueDate   DateTime
+  completed Boolean  @default(false)
 
   // Relations
-  project     Project   @relation(fields: [projectId], references: [id])
-  projectId   String
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
 }
 
 // Guild model
 model Guild {
-  id          String        @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   logo        String?
   description String
   categories  String[]
-  ranking     Int           @default(0)
-  score       Int           @default(0)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  ranking     Int      @default(0)
+  score       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  owner       User          @relation("GuildOwner", fields: [ownerId], references: [id])
-  ownerId     String
-  members     GuildMember[]
-  projects    Project[]
+  owner    User          @relation("GuildOwner", fields: [ownerId], references: [id])
+  ownerId  String
+  members  GuildMember[]
+  projects Project[]
 }
 
 model GuildMember {
-  id        String      @id @default(uuid())
-  role      GuildRole
-  joinedAt  DateTime    @default(now())
+  id       String    @id @default(uuid())
+  role     GuildRole
+  joinedAt DateTime  @default(now())
 
   // Relations
-  user      User        @relation(fields: [userId], references: [id])
-  userId    String
-  guild     Guild       @relation(fields: [guildId], references: [id])
-  guildId   String
+  user    User   @relation(fields: [userId], references: [id])
+  userId  String
+  guild   Guild  @relation(fields: [guildId], references: [id])
+  guildId String
 
   @@unique([userId, guildId])
 }
@@ -206,35 +206,35 @@ enum GuildRole {
 
 // Mentorship models
 model MentorProfile {
-  id            String      @id @default(uuid())
-  title         String
-  institution   String
-  specialties   String[]
-  bio           String
-  availability  String
-  rating        Float       @default(0)
+  id           String   @id @default(uuid())
+  title        String
+  institution  String
+  specialties  String[]
+  bio          String
+  availability String
+  rating       Float    @default(0)
 
   // Relations
-  user          User        @relation(fields: [userId], references: [id])
-  userId        String      @unique
-  mentorships   MentorshipRelation[]
-  reviews       MentorReview[]
+  user        User                 @relation(fields: [userId], references: [id])
+  userId      String               @unique
+  mentorships MentorshipRelation[]
+  reviews     MentorReview[]
 }
 
 model MentorshipRelation {
-  id            String              @id @default(uuid())
-  status        MentorshipStatus
-  startDate     DateTime?
-  endDate       DateTime?
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
+  id        String           @id @default(uuid())
+  status    MentorshipStatus
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   // Relations
-  student       User                @relation("Student", fields: [studentId], references: [id])
-  studentId     String
-  mentor        User                @relation("Mentor", fields: [mentorId], references: [id])
-  mentorId      String
-  mentorProfile MentorProfile       @relation(fields: [mentorProfileId], references: [id])
+  student         User          @relation("Student", fields: [studentId], references: [id])
+  studentId       String
+  mentor          User          @relation("Mentor", fields: [mentorId], references: [id])
+  mentorId        String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id])
   mentorProfileId String
 
   @@unique([studentId, mentorId])
@@ -248,37 +248,37 @@ enum MentorshipStatus {
 }
 
 model MentorReview {
-  id            String          @id @default(uuid())
-  rating        Int
-  comment       String
-  date          DateTime        @default(now())
+  id      String   @id @default(uuid())
+  rating  Int
+  comment String
+  date    DateTime @default(now())
 
   // Relations
-  user          User            @relation(fields: [userId], references: [id])
-  userId        String
-  mentorProfile MentorProfile   @relation(fields: [mentorProfileId], references: [id])
+  user            User          @relation(fields: [userId], references: [id])
+  userId          String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id])
   mentorProfileId String
 }
 
 // Research article model
 model Article {
-  id            String          @id @default(uuid())
-  title         String
-  abstract      String
-  content       String          @db.Text
-  tags          String[]
-  status        ArticleStatus   @default(DRAFT)
-  likes         Int             @default(0)
-  publishedDate DateTime?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id             String        @id @default(uuid())
+  title          String
+  abstract       String
+  content        String        @db.Text
+  tags           String[]
+  status         ArticleStatus @default(DRAFT)
+  likes          Int           @default(0)
+  publishedDate  DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
   timestampProof String?
 
   // Relations
-  author        User            @relation(fields: [authorId], references: [id])
-  authorId      String
-  comments      Comment[]
-  likedBy       Like[]
+  author   User      @relation(fields: [authorId], references: [id])
+  authorId String
+  comments Comment[]
+  likedBy  Like[]
 }
 
 enum ArticleStatus {
@@ -288,59 +288,59 @@ enum ArticleStatus {
 }
 
 model Comment {
-  id            String      @id @default(uuid())
-  content       String
-  createdAt     DateTime    @default(now())
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
 
   // Relations
-  user          User        @relation(fields: [userId], references: [id])
-  userId        String
-  article       Article     @relation(fields: [articleId], references: [id])
-  articleId     String
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  article   Article @relation(fields: [articleId], references: [id])
+  articleId String
 }
 
 model Like {
-  id            String      @id @default(uuid())
-  createdAt     DateTime    @default(now())
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
 
   // Relations
-  user          User        @relation(fields: [userId], references: [id])
-  userId        String
-  article       Article     @relation(fields: [articleId], references: [id])
-  articleId     String
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  article   Article @relation(fields: [articleId], references: [id])
+  articleId String
 
   @@unique([userId, articleId])
 }
 
 // Messaging models
 model Message {
-  id            String      @id @default(uuid())
-  content       String
-  read          Boolean     @default(false)
-  createdAt     DateTime    @default(now())
+  id        String   @id @default(uuid())
+  content   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 
   // Relations
-  sender        User        @relation("MessageSender", fields: [senderId], references: [id])
-  senderId      String
-  receiver      User        @relation("MessageReceiver", fields: [receiverId], references: [id])
-  receiverId    String
-  conversation  Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation("MessageSender", fields: [senderId], references: [id])
+  senderId       String
+  receiver       User         @relation("MessageReceiver", fields: [receiverId], references: [id])
+  receiverId     String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
   conversationId String
 }
 
 model Conversation {
-  id            String      @id @default(uuid())
-  type          ConversationType
-  name          String?     // For group conversations
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id        String           @id @default(uuid())
+  type      ConversationType
+  name      String? // For group conversations
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   // Relations
-  messages      Message[]
-  participants  ConversationParticipant[]
-  
+  messages     Message[]
+  participants ConversationParticipant[]
+
   // Added missing relation field
-  match         Match?
+  match Match?
 }
 
 enum ConversationType {
@@ -349,30 +349,30 @@ enum ConversationType {
 }
 
 model ConversationParticipant {
-  id              String        @id @default(uuid())
-  joinedAt        DateTime      @default(now())
-  lastRead        DateTime      @default(now())
+  id       String   @id @default(uuid())
+  joinedAt DateTime @default(now())
+  lastRead DateTime @default(now())
 
   // Relations
-  user            User          @relation(fields: [userId], references: [id])
-  userId          String
-  conversation    Conversation  @relation(fields: [conversationId], references: [id])
-  conversationId  String
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
 
   @@unique([userId, conversationId])
 }
 
 // Collaboration matching models
 model SwipeAction {
-  id            String      @id @default(uuid())
-  action        SwipeType
-  createdAt     DateTime    @default(now())
+  id        String    @id @default(uuid())
+  action    SwipeType
+  createdAt DateTime  @default(now())
 
   // Relations
-  swiper        User        @relation("SwipedRight", fields: [swiperId], references: [id])
-  swiperId      String
-  target        User        @relation("SwipedOn", fields: [targetId], references: [id])
-  targetId      String
+  swiper   User   @relation("SwipedRight", fields: [swiperId], references: [id])
+  swiperId String
+  target   User   @relation("SwipedOn", fields: [targetId], references: [id])
+  targetId String
 
   @@unique([swiperId, targetId])
 }
@@ -383,29 +383,29 @@ enum SwipeType {
 }
 
 model Match {
-  id            String      @id @default(uuid())
-  createdAt     DateTime    @default(now())
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
 
   // Relations
-  users         User[]      @relation("UserMatches")
-  conversation  Conversation? @relation(fields: [conversationId], references: [id])
-  conversationId String?    @unique
+  users          User[]        @relation("UserMatches")
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  conversationId String?       @unique
 }
 
 model CollaborationRequest {
-  id            String              @id @default(uuid())
-  message       String
-  status        RequestStatus       @default(PENDING)
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
+  id        String        @id @default(uuid())
+  message   String
+  status    RequestStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   // Relations
-  sender        User                @relation("RequestSender", fields: [senderId], references: [id])
-  senderId      String
-  receiver      User                @relation("RequestReceiver", fields: [receiverId], references: [id])
-  receiverId    String
-  project       Project?            @relation(fields: [projectId], references: [id])
-  projectId     String?
+  sender     User     @relation("RequestSender", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User     @relation("RequestReceiver", fields: [receiverId], references: [id])
+  receiverId String
+  project    Project? @relation(fields: [projectId], references: [id])
+  projectId  String?
 }
 
 enum RequestStatus {
@@ -416,15 +416,15 @@ enum RequestStatus {
 
 // Notification model
 model Notification {
-  id            String              @id @default(uuid())
-  type          NotificationType
-  content       String
-  read          Boolean             @default(false)
-  createdAt     DateTime            @default(now())
+  id        String           @id @default(uuid())
+  type      NotificationType
+  content   String
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
 
   // Relations
-  user          User                @relation(fields: [userId], references: [id])
-  userId        String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
 }
 
 enum NotificationType {
@@ -438,12 +438,11 @@ enum NotificationType {
 
 // Search history
 model SearchQuery {
-  id            String      @id @default(uuid())
-  query         String
-  createdAt     DateTime    @default(now())
+  id        String   @id @default(uuid())
+  query     String
+  createdAt DateTime @default(now())
 
   // Relations
-  user          User        @relation(fields: [userId], references: [id])
-  userId        String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
 }
-

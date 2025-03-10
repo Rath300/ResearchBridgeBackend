@@ -1,8 +1,16 @@
 import express from "express"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, User } from "@prisma/client"
 import { authenticateToken } from "../middleware/auth"
+import type { Request } from "express"
+
+interface AuthRequest extends Request {
+  user?: {
+    id: string
+    email: string
+  }
+}
 
 const router = express.Router()
 const prisma = new PrismaClient()
@@ -66,12 +74,12 @@ router.post("/login", async (req, res) => {
       where: { email },
     })
 
-    if (!user) {
+    if (!user || !user.password) {
       return res.status(400).json({ error: "Invalid credentials" })
     }
 
     // Check password
-    const isMatch = await bcrypt.compare(password, user.password || "")
+    const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
       return res.status(400).json({ error: "Invalid credentials" })
     }
@@ -94,10 +102,10 @@ router.post("/login", async (req, res) => {
 })
 
 // Get current user
-router.get("/me", authenticateToken, async (req: any, res) => {
+router.get("/me", authenticateToken, async (req: AuthRequest, res) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
+      where: { id: req.user?.id },
       select: {
         id: true,
         email: true,

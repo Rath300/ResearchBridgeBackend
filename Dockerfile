@@ -1,7 +1,7 @@
-FROM node:18-alpine
+FROM node:16-alpine
 
-# Install build dependencies and OpenSSL 1.1
-RUN apk add --no-cache python3 make g++ openssl1.1-libs
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
 
 # Set working directory
 WORKDIR /app

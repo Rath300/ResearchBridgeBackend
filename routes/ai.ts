@@ -1,15 +1,14 @@
 import express from "express"
 import { PrismaClient } from "@prisma/client"
-import { Configuration, OpenAIApi } from "openai"
+import OpenAI from "openai"
 
 const router = express.Router()
 const prisma = new PrismaClient()
 
 // Configure OpenAI
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
-const openai = new OpenAIApi(configuration)
 
 // Generate research paper summary
 router.post("/summarize", async (req, res) => {
@@ -23,14 +22,23 @@ router.post("/summarize", async (req, res) => {
     // Limit text length
     const truncatedText = text.substring(0, 4000)
 
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: `Summarize the following research paper in 3-5 paragraphs:\n\n${truncatedText}`,
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful research assistant that summarizes academic papers.",
+        },
+        {
+          role: "user",
+          content: `Summarize the following research paper in 3-5 paragraphs:\n\n${truncatedText}`,
+        },
+      ],
       max_tokens: 500,
       temperature: 0.5,
     })
 
-    const summary = response.data.choices[0].text?.trim()
+    const summary = response.choices[0].message.content?.trim()
 
     res.json({ summary })
   } catch (error) {
@@ -87,14 +95,23 @@ router.post("/recommendations", async (req: any, res) => {
       .join("\n\n")
 
     // Generate recommendations using OpenAI
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: `Based on the following research papers and interests (${userInterests.join(", ")}), suggest 5 research topics that would be interesting to explore:\n\n${paperDescriptions}\n\nRecommended research topics:`,
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful research advisor that suggests research topics based on interests and recent papers.",
+        },
+        {
+          role: "user",
+          content: `Based on the following research papers and interests (${userInterests.join(", ")}), suggest 5 research topics that would be interesting to explore:\n\n${paperDescriptions}\n\nRecommended research topics:`,
+        },
+      ],
       max_tokens: 500,
       temperature: 0.7,
     })
 
-    const recommendations = response.data.choices[0].text?.trim()
+    const recommendations = response.choices[0].message.content?.trim()
 
     // Parse recommendations into an array
     const recommendationArray = recommendations
@@ -121,29 +138,53 @@ router.post("/improve-writing", async (req, res) => {
     // Limit text length
     const truncatedText = text.substring(0, 4000)
 
-    let prompt
+    let systemPrompt
     switch (type) {
       case "abstract":
-        prompt = `Improve the following research paper abstract to be more concise, clear, and impactful:\n\n${truncatedText}`
+        systemPrompt = "You are a research writing expert specializing in academic abstracts."
         break
       case "methodology":
-        prompt = `Improve the following research methodology section to be more precise, detailed, and scientifically sound:\n\n${truncatedText}`
+        systemPrompt = "You are a research methodology expert specializing in scientific writing."
         break
       case "discussion":
-        prompt = `Improve the following research discussion section to better analyze results and connect to existing literature:\n\n${truncatedText}`
+        systemPrompt = "You are a research writing expert specializing in discussion and analysis sections."
         break
       default:
-        prompt = `Improve the following research writing to be more academic, clear, and impactful:\n\n${truncatedText}`
+        systemPrompt = "You are an academic writing expert specializing in research papers."
     }
 
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt,
+    let userPrompt
+    switch (type) {
+      case "abstract":
+        userPrompt = `Improve the following research paper abstract to be more concise, clear, and impactful:\n\n${truncatedText}`
+        break
+      case "methodology":
+        userPrompt = `Improve the following research methodology section to be more precise, detailed, and scientifically sound:\n\n${truncatedText}`
+        break
+      case "discussion":
+        userPrompt = `Improve the following research discussion section to better analyze results and connect to existing literature:\n\n${truncatedText}`
+        break
+      default:
+        userPrompt = `Improve the following research writing to be more academic, clear, and impactful:\n\n${truncatedText}`
+    }
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt,
+        },
+        {
+          role: "user",
+          content: userPrompt,
+        },
+      ],
       max_tokens: 1000,
       temperature: 0.4,
     })
 
-    const improvedText = response.data.choices[0].text?.trim()
+    const improvedText = response.choices[0].message.content?.trim()
 
     res.json({ improvedText })
   } catch (error) {
@@ -161,14 +202,23 @@ router.post("/research-questions", async (req, res) => {
       return res.status(400).json({ error: "Topic is required" })
     }
 
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: `Generate ${count} specific, focused research questions for a study on "${topic}" that would be suitable for high school student researchers:`,
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are a research advisor specializing in helping high school students develop research questions.",
+        },
+        {
+          role: "user",
+          content: `Generate ${count} specific, focused research questions for a study on "${topic}" that would be suitable for high school student researchers:`,
+        },
+      ],
       max_tokens: 500,
       temperature: 0.7,
     })
 
-    const questions = response.data.choices[0].text?.trim()
+    const questions = response.choices[0].message.content?.trim()
 
     // Parse questions into an array
     const questionArray = questions
